@@ -1,0 +1,142 @@
+#include <iostream>
+#include <conio.h>
+
+using namespace std;
+
+bool isOver;
+const int fieldSize = 20;
+int score, lenTail, x, y, tailX[100], tailY[100], fruitX, fruitY;
+enum States {STOP, RIGHT, LEFT, UP, DOWN};
+States state;
+
+
+void init();
+void drawField();
+void input();
+void logic();
+
+int main() {
+	init();
+	while (!isOver) {
+		drawField();
+		input();
+		logic();
+	}
+}
+
+void init() {
+	isOver = false;
+	score = 0;
+	x = fieldSize / 2;
+	y = fieldSize / 2;
+	fruitX = 1 + rand() % (fieldSize - 1);
+	fruitY = 1 + rand() % (fieldSize - 1);
+	state = STOP;
+	lenTail = 1;
+	tailX[0] = x;
+	tailY[0] = y;
+}
+
+void drawField() {
+	system("cls");
+	for (int i = 0; i <= fieldSize; i++)
+		cout << "#";
+	cout << endl;
+
+	for (int row = 1; row < fieldSize; row++) {
+		cout << "#";
+		for (int column = 1; column < fieldSize; column++) {
+			if (row == y && column == x)
+				cout << "S";
+			else if (row == fruitY && column == fruitX)
+				cout << "F";
+			else {
+				bool flag = false;
+				for (int k = 0; k < lenTail; k++) {
+					if (tailX[k] == column && tailY[k] == row) {
+						cout << "o";
+						flag = true;
+					}
+				}
+				if (!flag)
+					cout << " ";
+			}
+		}
+		cout << "#";
+		cout << endl;
+	}
+
+	for (int i = 0; i <= fieldSize; i++)
+		cout << "#";
+	cout << endl;
+	cout << "Score: " << score << endl;
+	cout << "FruitX: " << fruitX << "; " << "FruitY: " << fruitY << endl;
+}
+
+void input() {
+	if (_kbhit()) {
+		switch (_getch()){
+		case 'a':
+			state = LEFT;
+			break;
+		case 'w':
+			state = UP;
+			break;
+		case 'd':
+			state = RIGHT;
+			break;
+		case 's':
+			state = DOWN;
+			break;
+		case 'z':
+			isOver = true;
+			break;
+		}
+	}
+}
+
+void logic() {
+	switch (state) {
+	case UP:
+		y--;
+		break;
+	case DOWN:
+		y++;
+		break;
+	case RIGHT:
+		x++; 
+		break;
+	case LEFT:
+		x--;
+		break;
+	}
+
+	if (x >= fieldSize || x <= 0 || y >= fieldSize || y <= 0) {
+		isOver = true;
+		cout << endl << "Game over!" << endl;
+	}
+
+	for (int i = lenTail - 1; i > 0; i--) {
+		tailX[i] = tailX[i - 1];
+		tailY[i] = tailY[i - 1];
+	}
+	tailX[0] = x;
+	tailY[0] = y;
+
+	for (int i = lenTail - 1; i > 0; i--) {
+		if (x == tailX[i] && y == tailY[i]) {
+			isOver = true;
+			cout << endl << "Game over!" << endl;
+			break;
+		}
+	}
+
+	if (x == fruitX && y == fruitY) {
+		score++;
+		fruitX = 1 + rand() % (fieldSize - 1); 
+		fruitY = 1 + rand() % (fieldSize - 1);
+		lenTail++;
+		tailX[lenTail - 1] = tailX[lenTail - 2];
+		tailY[lenTail - 1] = tailY[lenTail - 2];
+	}
+}
